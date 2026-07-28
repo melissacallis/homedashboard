@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header id="top-bar">
+    <div id="clock"></div>
+    <div id="date"></div>
+    <button id="mic-btn" title="Talk to assistant">🎤</button>
+  </header>
+
+  <main class="grid">
+    <section class="card" id="bills-card">
+      <h2>💵 Bills</h2>
+      <ul id="bills-list" class="event-list"><li class="muted">Loading…</li></ul>
+    </section>
+
+    <section class="card" id="meds-card">
+      <h2>💊 Medication Reminders</h2>
+      <ul id="meds-list" class="event-list"><li class="muted">Loading…</li></ul>
+    </section>
+
+    <section class="card" id="calendar-card">
+      <h2>📅 Upcoming</h2>
+      <ul id="calendar-list" class="event-list"><li class="muted">Loading…</li></ul>
+    </section>
+
+    <section class="card" id="news-card">
+      <h2>📰 Headlines</h2>
+      <ul id="news-list" class="event-list"><li class="muted">Loading…</li></ul>
+    </section>
+
+    <section class="card" id="stocks-card">
+      <h2>📈 Stocks</h2>
+      <ul id="stocks-list" class="event-list"><li class="muted">Loading…</li></ul>
+    </section>
+  </main>
+
+  <div id="assistant-bubble" class="hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

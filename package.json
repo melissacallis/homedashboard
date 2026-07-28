@@ -1,0 +1,15 @@
+{
+  "name": "home-dashboard",
+  "version": "1.0.0",
+  "description": "Home dashboard: bills, meds, calendar, news, stocks, voice assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "googleapis": "^140.0.0",
+    "rss-parser": "^3.13.0",
+    "dotenv": "^16.4.5"
+  }
+}
