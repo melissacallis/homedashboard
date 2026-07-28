@@ -1,0 +1,115 @@
+:root {
+  --bg: #0b0f14;
+  --card: #131a22;
+  --border: #223140;
+  --text: #eaf2f8;
+  --muted: #7b8ea3;
+  --accent: #4fd1c5;
+  --bill: #ff9f68;
+  --med: #ff6b8b;
+  --gen: #4fd1c5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#top-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 24px 40px 8px;
+}
+
+#clock {
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+}
+
+#date {
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+#mic-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.5rem;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  cursor: pointer;
+}
+#mic-btn.listening { background: var(--accent); animation: pulse 1s infinite; }
+@keyframes pulse { 0%{opacity:1} 50%{opacity:.5} 100%{opacity:1} }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 18px;
+  padding: 16px 40px 40px;
+  height: calc(100vh - 110px);
+}
+
+#calendar-card { grid-row: span 2; }
+#news-card { grid-column: span 2; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 22px;
+  overflow-y: auto;
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.event-list { list-style: none; margin: 0; padding: 0; }
+.event-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 1rem;
+}
+.event-list li:last-child { border-bottom: none; }
+.event-list .muted { color: var(--muted); }
+.event-title { font-weight: 600; }
+.event-time { color: var(--muted); font-size: 0.85rem; display: block; }
+
+.tag-bill { border-left: 3px solid var(--bill); padding-left: 10px; }
+.tag-medication { border-left: 3px solid var(--med); padding-left: 10px; }
+.tag-general { border-left: 3px solid var(--gen); padding-left: 10px; }
+
+.stock-row { display: flex; justify-content: space-between; }
+.stock-up { color: #4ade80; }
+.stock-down { color: #f87171; }
+
+#assistant-bubble {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #06201c;
+  padding: 14px 22px;
+  border-radius: 20px;
+  font-weight: 600;
+  max-width: 60%;
+  text-align: center;
+}
+.hidden { display: none; }
