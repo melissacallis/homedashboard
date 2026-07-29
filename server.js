@@ -34,6 +34,14 @@ app.get('/auth', (req, res) => {
 
 // Step 2: Google redirects here with a code; we exchange it for tokens
 app.get('/oauth2callback', async (req, res) => {
+  if (req.query.error) {
+    console.error('Google returned an OAuth error:', req.query.error);
+    return res.status(400).send(`Google returned an error: ${req.query.error}. This usually means the consent screen was cancelled, or your Google account needs to be added as a test user in the OAuth consent screen settings (if the app is still in "Testing" mode).`);
+  }
+  if (!req.query.code) {
+    console.error('No code param on /oauth2callback. Full query:', req.query);
+    return res.status(400).send('No authorization code received from Google. Try visiting /auth again from scratch (not a reloaded/bookmarked link).');
+  }
   try {
     const { tokens } = await oauth2Client.getToken(req.query.code);
     oauth2Client.setCredentials(tokens);
