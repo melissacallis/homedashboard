@@ -46,11 +46,11 @@ async function loadCalendar() {
     const general = events.filter(e => e.category === 'general');
 
     renderList(document.getElementById('bills-list'), bills.map(e =>
-      `<span class="tag-bill"><span class="event-title">${e.title}</span><span class="event-time">${fmtTime(e.start, e.allDay)}</span></span>`
+      `<div class="tag-bill"><div class="event-title">${e.title}</div><div class="event-time">📅 ${fmtTime(e.start, e.allDay)}</div></div>`
     ), 'No upcoming bills 🎉');
 
     renderList(document.getElementById('meds-list'), meds.map(e =>
-      `<span class="tag-medication"><span class="event-title">${e.title}</span><span class="event-time">${fmtTime(e.start, e.allDay)}</span></span>`
+      `<div class="tag-medication"><div class="event-title">${e.title}</div><div class="event-time">📅 ${fmtTime(e.start, e.allDay)}</div></div>`
     ), 'No medication reminders');
 
     renderMonthGrid(events);

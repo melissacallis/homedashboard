@@ -132,7 +132,7 @@ app.get('/api/news', async (req, res) => {
       link: i.link,
       pubDate: i.pubDate,
       source: i.creator || (i.title.split(' - ').pop()),
-      image: `https://source.unsplash.com/800x450/?${encodeURIComponent(i.title.split(' - ')[0].split(' ').slice(0, 3).join(' '))}`,
+      image: `https://picsum.photos/seed/${encodeURIComponent(i.title.slice(0, 40))}/800/450`,
     }));
     res.json({ headlines });
   } catch (err) {

@@ -15,11 +15,14 @@
 
 body {
   margin: 0;
-  background: var(--bg);
   color: var(--text);
   font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
   overflow: hidden;
   height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(11,15,20,0.88), rgba(11,15,20,0.95)),
+    url('https://picsum.photos/seed/homedashboard-bg/1920/1080') center/cover no-repeat,
+    var(--bg);
 }
 
 #top-bar {
@@ -74,7 +77,9 @@ body {
 #stocks-card { grid-area: stocks; }
 
 .card {
-  background: var(--card);
+  background: rgba(19, 26, 34, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 18px 22px;
