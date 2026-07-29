@@ -150,9 +150,19 @@ async function loadNews() {
   try {
     const res = await fetch('/api/news');
     const data = await res.json();
-    renderList(document.getElementById('news-list'), (data.headlines || []).map(h =>
-      `<span class="event-title">${h.title}</span>`
-    ), 'No headlines available');
+    const headlines = data.headlines || [];
+    if (!headlines.length) {
+      document.getElementById('news-track').innerHTML = '<span class="muted">No headlines available</span>';
+      return;
+    }
+    const cardHtml = h => `
+      <div class="news-item">
+        <img src="${h.image}" alt="" loading="lazy" onerror="this.style.display='none'">
+        <div class="news-caption">${h.title}</div>
+      </div>`;
+    // Duplicate the list once so the CSS marquee (-50%) loops seamlessly
+    const html = headlines.map(cardHtml).join('') + headlines.map(cardHtml).join('');
+    document.getElementById('news-track').innerHTML = html;
   } catch (err) {
     console.error('News load failed', err);
   }
@@ -202,7 +212,7 @@ function handleCommand(transcript) {
     const items = [...document.querySelectorAll('#meds-list .event-title')].map(e => e.textContent);
     speak(items.length ? `Your medication reminders: ${items.join(', ')}` : 'No medication reminders right now.');
   } else if (t.includes('news') || t.includes('headline')) {
-    const items = [...document.querySelectorAll('#news-list .event-title')].map(e => e.textContent).slice(0, 3);
+    const items = [...document.querySelectorAll('#news-track .news-caption')].map(e => e.textContent).slice(0, 3);
     speak(items.length ? `Top headlines: ${items.join('. ')}` : 'No news available.');
   } else if (t.includes('stock') || t.includes('market')) {
     const items = [...document.querySelectorAll('#stocks-list')].map(e => e.textContent);

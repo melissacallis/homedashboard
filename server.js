@@ -91,7 +91,30 @@ app.get('/api/calendar', async (req, res) => {
               : 'general',
     }));
 
-    res.json({ events });
+    // Merge in US holidays from Google's public holiday calendar
+    let holidays = [];
+    try {
+      const holidayResult = await calendar.events.list({
+        calendarId: 'en.usa#holiday@group.v.calendar.google.com',
+        timeMin: timeMin.toISOString(),
+        timeMax: timeMax.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+        maxResults: 50,
+      });
+      holidays = (holidayResult.data.items || []).map(e => ({
+        id: 'holiday-' + e.id,
+        title: e.summary || 'Holiday',
+        start: e.start.dateTime || e.start.date,
+        allDay: !e.start.dateTime,
+        description: e.description || '',
+        category: 'holiday',
+      }));
+    } catch (holidayErr) {
+      console.error('Failed to fetch holidays (non-fatal):', holidayErr.message);
+    }
+
+    res.json({ events: [...events, ...holidays] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch calendar events' });
@@ -109,6 +132,7 @@ app.get('/api/news', async (req, res) => {
       link: i.link,
       pubDate: i.pubDate,
       source: i.creator || (i.title.split(' - ').pop()),
+      image: `https://source.unsplash.com/800x450/?${encodeURIComponent(i.title.split(' - ')[0].split(' ').slice(0, 3).join(' '))}`,
     }));
     res.json({ headlines });
   } catch (err) {
