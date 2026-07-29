@@ -66,7 +66,7 @@ app.get('/api/calendar', async (req, res) => {
       return res.status(401).json({ error: 'Not authorized yet. Visit /auth first.' });
     }
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const days = parseInt(req.query.days || '14', 10);
+    const days = parseInt(req.query.days || '60', 10);
     const timeMin = new Date();
     const timeMax = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
@@ -76,7 +76,7 @@ app.get('/api/calendar', async (req, res) => {
       timeMax: timeMax.toISOString(),
       singleEvents: true,
       orderBy: 'startTime',
-      maxResults: 50,
+      maxResults: 100,
     });
 
     const events = (result.data.items || []).map(e => ({

@@ -28,13 +28,19 @@ let lastAnnouncedIds = new Set();
 
 async function loadCalendar() {
   try {
-    const res = await fetch('/api/calendar?days=14');
+    const res = await fetch('/api/calendar?days=60');
     const data = await res.json();
     if (data.error) {
-      renderList(document.getElementById('calendar-list'), [], 'Not connected — visit /auth on the server to link Google Calendar.');
+      const msg = res.status === 401
+        ? 'Not connected — visit /auth on the server to link Google Calendar.'
+        : `Error loading calendar: ${data.error}`;
+      renderList(document.getElementById('bills-list'), [], msg);
+      renderList(document.getElementById('meds-list'), [], msg);
+      renderList(document.getElementById('calendar-list'), [], msg);
       return;
     }
     const events = data.events;
+    console.log(`Loaded ${events.length} calendar events`, events);
     const bills = events.filter(e => e.category === 'bill');
     const meds = events.filter(e => e.category === 'medication');
     const general = events.filter(e => e.category === 'general');
@@ -47,9 +53,9 @@ async function loadCalendar() {
       `<span class="tag-medication"><span class="event-title">${e.title}</span><span class="event-time">${fmtTime(e.start, e.allDay)}</span></span>`
     ), 'No medication reminders');
 
-    renderList(document.getElementById('calendar-list'), general.slice(0, 12).map(e =>
+    renderList(document.getElementById('calendar-list'), general.slice(0, 30).map(e =>
       `<span class="tag-general"><span class="event-title">${e.title}</span><span class="event-time">${fmtTime(e.start, e.allDay)}</span></span>`
-    ), 'Nothing else upcoming');
+    ), events.length === 0 ? 'No events found in the next 60 days on your primary calendar.' : 'Nothing else upcoming');
 
     checkProactiveReminders(events);
   } catch (err) {
