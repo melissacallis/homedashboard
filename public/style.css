@@ -54,15 +54,23 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr 1.6fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "bills   meds    calendar"
+    "news    news    calendar"
+    "stocks  stocks  calendar";
+  grid-template-rows: auto auto 1fr;
   gap: 18px;
   padding: 16px 40px 40px;
   height: calc(100vh - 110px);
 }
 
-#calendar-card { grid-row: span 2; }
-#news-card { grid-column: span 2; }
+#bills-card { grid-area: bills; }
+#meds-card { grid-area: meds; }
+#calendar-card { grid-area: calendar; display: flex; flex-direction: column; }
+#news-card { grid-area: news; }
+#stocks-card { grid-area: stocks; }
 
 .card {
   background: var(--card);
@@ -113,3 +121,70 @@ body {
   text-align: center;
 }
 .hidden { display: none; }
+
+/* ---------- Month calendar grid ---------- */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cal-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.cal-nav {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+}
+.cal-dow {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding-bottom: 4px;
+}
+.cal-day {
+  background: #0f151c;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.cal-day.other-month { opacity: 0.35; }
+.cal-day.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.cal-daynum { font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
+.cal-day.today .cal-daynum { color: var(--accent); font-weight: 700; }
+.cal-event {
+  font-size: 0.68rem;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-event.bill { background: rgba(255,159,104,0.18); color: var(--bill); }
+.cal-event.medication { background: rgba(255,107,139,0.18); color: var(--med); }
+.cal-event.general { background: rgba(79,209,197,0.18); color: var(--gen); }
+.cal-more { font-size: 0.65rem; color: var(--muted); }

@@ -53,15 +53,80 @@ async function loadCalendar() {
       `<span class="tag-medication"><span class="event-title">${e.title}</span><span class="event-time">${fmtTime(e.start, e.allDay)}</span></span>`
     ), 'No medication reminders');
 
-    renderList(document.getElementById('calendar-list'), general.slice(0, 30).map(e =>
-      `<span class="tag-general"><span class="event-title">${e.title}</span><span class="event-time">${fmtTime(e.start, e.allDay)}</span></span>`
-    ), events.length === 0 ? 'No events found in the next 60 days on your primary calendar.' : 'Nothing else upcoming');
+    renderMonthGrid(events);
 
     checkProactiveReminders(events);
   } catch (err) {
     console.error('Calendar load failed', err);
   }
 }
+
+// ---------- Month grid rendering ----------
+let calViewDate = new Date(); // month currently displayed
+let lastEventsForGrid = [];
+
+function renderMonthGrid(events) {
+  lastEventsForGrid = events;
+  const grid = document.getElementById('calendar-grid');
+  const label = document.getElementById('cal-month-label');
+  const year = calViewDate.getFullYear();
+  const month = calViewDate.getMonth();
+
+  label.textContent = calViewDate.toLocaleDateString([], { month: 'long', year: 'numeric' });
+
+  // Map events by yyyy-mm-dd (local date) for fast lookup
+  const eventsByDay = {};
+  events.forEach(e => {
+    const d = new Date(e.start);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    (eventsByDay[key] = eventsByDay[key] || []).push(e);
+  });
+
+  const firstOfMonth = new Date(year, month, 1);
+  const startDow = firstOfMonth.getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  const today = new Date();
+
+  let html = '';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => html += `<div class="cal-dow">${d}</div>`);
+
+  const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - startDow + 1;
+    let cellDate, otherMonth = false;
+    if (dayNum < 1) {
+      cellDate = new Date(year, month - 1, daysInPrevMonth + dayNum);
+      otherMonth = true;
+    } else if (dayNum > daysInMonth) {
+      cellDate = new Date(year, month + 1, dayNum - daysInMonth);
+      otherMonth = true;
+    } else {
+      cellDate = new Date(year, month, dayNum);
+    }
+    const key = `${cellDate.getFullYear()}-${cellDate.getMonth()}-${cellDate.getDate()}`;
+    const isToday = cellDate.toDateString() === today.toDateString();
+    const dayEvents = (eventsByDay[key] || []).sort((a, b) => new Date(a.start) - new Date(b.start));
+    const shown = dayEvents.slice(0, 3);
+    const extra = dayEvents.length - shown.length;
+
+    html += `<div class="cal-day${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}">
+      <div class="cal-daynum">${cellDate.getDate()}</div>
+      ${shown.map(e => `<div class="cal-event ${e.category}" title="${e.title}">${e.title}</div>`).join('')}
+      ${extra > 0 ? `<div class="cal-more">+${extra} more</div>` : ''}
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+document.getElementById('cal-prev').addEventListener('click', () => {
+  calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth() - 1, 1);
+  renderMonthGrid(lastEventsForGrid);
+});
+document.getElementById('cal-next').addEventListener('click', () => {
+  calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth() + 1, 1);
+  renderMonthGrid(lastEventsForGrid);
+});
 
 // Speak reminders for anything starting within the next 30 minutes, once each
 function checkProactiveReminders(events) {
@@ -143,8 +208,12 @@ function handleCommand(transcript) {
     const items = [...document.querySelectorAll('#stocks-list')].map(e => e.textContent);
     speak(items.length ? items[0] : 'No stock data available.');
   } else if (t.includes('calendar') || t.includes('schedule') || t.includes('today')) {
-    const items = [...document.querySelectorAll('#calendar-list .event-title')].map(e => e.textContent).slice(0, 5);
-    speak(items.length ? `Coming up: ${items.join(', ')}` : 'Nothing on your calendar.');
+    const upcoming = [...lastEventsForGrid]
+      .filter(e => new Date(e.start) >= new Date())
+      .sort((a, b) => new Date(a.start) - new Date(b.start))
+      .slice(0, 5)
+      .map(e => e.title);
+    speak(upcoming.length ? `Coming up: ${upcoming.join(', ')}` : 'Nothing on your calendar.');
   } else if (t.includes('time')) {
     speak(`It's ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
   } else {

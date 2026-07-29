@@ -25,8 +25,12 @@
     </section>
 
     <section class="card" id="calendar-card">
-      <h2>📅 Upcoming</h2>
-      <ul id="calendar-list" class="event-list"><li class="muted">Loading…</li></ul>
+      <div class="cal-header">
+        <button id="cal-prev" class="cal-nav">‹</button>
+        <h2 id="cal-month-label">📅 Loading…</h2>
+        <button id="cal-next" class="cal-nav">›</button>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
     </section>
 
     <section class="card" id="news-card">
