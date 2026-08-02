@@ -5,13 +5,10 @@
 const express = require('express');
 const path = require('path');
 const { google } = require('googleapis');
-const Parser = require('rss-parser');
-const cheerio = require('cheerio');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const rssParser = new Parser();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -122,43 +119,33 @@ app.get('/api/calendar', async (req, res) => {
   }
 });
 
-// ---------- News headlines (Google News RSS, no API key needed) ----------
-// Google News RSS doesn't include real article images, so we fetch each
-// article page and pull its og:image meta tag. Falls back to null (frontend
-// hides broken/missing images) if a page can't be scraped or has none.
-async function getOgImage(url) {
-  try {
-    const r = await fetch(url, {
-      redirect: 'follow',
-      signal: AbortSignal.timeout(5000),
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; HomeDashboard/1.0)' },
-    });
-    if (!r.ok) return null;
-    const html = await r.text();
-    const $ = cheerio.load(html);
-    return (
-      $('meta[property="og:image"]').attr('content') ||
-      $('meta[name="twitter:image"]').attr('content') ||
-      null
-    );
-  } catch (err) {
-    return null;
-  }
-}
-
+// ---------- News headlines (SerpApi Google News engine) ----------
+// Requires SERPAPI_API_KEY in .env — get one at https://serpapi.com
+// This returns thumbnail images directly, so no per-article scraping needed.
 app.get('/api/news', async (req, res) => {
   try {
-    const feedUrl = `https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`;
-    const feed = await rssParser.parseURL(feedUrl);
-    const items = feed.items.slice(0, 12);
+    if (!process.env.SERPAPI_API_KEY) {
+      return res.status(500).json({ error: 'SERPAPI_API_KEY not set in .env' });
+    }
+    const topic = req.query.q || 'top stories';
+    const url = `https://serpapi.com/search.json?engine=google_news&gl=us&hl=en&q=${encodeURIComponent(topic)}&api_key=${process.env.SERPAPI_API_KEY}`;
 
-    const headlines = await Promise.all(items.map(async i => ({
-      title: i.title,
-      link: i.link,
-      pubDate: i.pubDate,
-      source: i.creator || (i.title.split(' - ').pop()),
-      image: await getOgImage(i.link),
-    })));
+    const r = await fetch(url);
+    const data = await r.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const headlines = (data.news_results || [])
+      .slice(0, 12)
+      .map(item => ({
+        title: item.title,
+        link: item.link,
+        pubDate: item.date,
+        source: item.source?.name || null,
+        image: item.thumbnail || null, // some results have no image — frontend handles that
+      }));
 
     res.json({ headlines });
   } catch (err) {
