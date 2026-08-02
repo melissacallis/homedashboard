@@ -11,8 +11,13 @@ tickClock();
 
 // ---------- Helpers ----------
 function fmtTime(iso, allDay) {
-  if (allDay) return 'All day';
-  return new Date(iso).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  const d = new Date(iso);
+  if (allDay) {
+    // Bills/meds are usually all-day events (a due date, not a due time) —
+    // still show the date instead of just "All day".
+    return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  return d.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 function renderList(el, items, emptyText) {
@@ -36,14 +41,12 @@ async function loadCalendar() {
         : `Error loading calendar: ${data.error}`;
       renderList(document.getElementById('bills-list'), [], msg);
       renderList(document.getElementById('meds-list'), [], msg);
-      renderList(document.getElementById('calendar-list'), [], msg);
       return;
     }
     const events = data.events;
     console.log(`Loaded ${events.length} calendar events`, events);
     const bills = events.filter(e => e.category === 'bill');
     const meds = events.filter(e => e.category === 'medication');
-    const general = events.filter(e => e.category === 'general');
 
     renderList(document.getElementById('bills-list'), bills.map(e =>
       `<div class="tag-bill"><div class="event-title">${e.title}</div><div class="event-time">📅 ${fmtTime(e.start, e.allDay)}</div></div>`
@@ -157,7 +160,9 @@ async function loadNews() {
     }
     const cardHtml = h => `
       <div class="news-item">
-        <img src="${h.image}" alt="" loading="lazy" onerror="this.style.display='none'">
+        ${h.image
+          ? `<img src="${h.image}" alt="" loading="lazy" onerror="this.remove()">`
+          : ''}
         <div class="news-caption">${h.title}</div>
       </div>`;
     // Duplicate the list once so the CSS marquee (-50%) loops seamlessly

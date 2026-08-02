@@ -6,6 +6,7 @@ const express = require('express');
 const path = require('path');
 const { google } = require('googleapis');
 const Parser = require('rss-parser');
+const cheerio = require('cheerio');
 require('dotenv').config();
 
 const app = express();
@@ -122,18 +123,43 @@ app.get('/api/calendar', async (req, res) => {
 });
 
 // ---------- News headlines (Google News RSS, no API key needed) ----------
+// Google News RSS doesn't include real article images, so we fetch each
+// article page and pull its og:image meta tag. Falls back to null (frontend
+// hides broken/missing images) if a page can't be scraped or has none.
+async function getOgImage(url) {
+  try {
+    const r = await fetch(url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(5000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; HomeDashboard/1.0)' },
+    });
+    if (!r.ok) return null;
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    return (
+      $('meta[property="og:image"]').attr('content') ||
+      $('meta[name="twitter:image"]').attr('content') ||
+      null
+    );
+  } catch (err) {
+    return null;
+  }
+}
+
 app.get('/api/news', async (req, res) => {
   try {
-    const topic = req.query.topic || 'US';
     const feedUrl = `https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`;
     const feed = await rssParser.parseURL(feedUrl);
-    const headlines = feed.items.slice(0, 12).map(i => ({
+    const items = feed.items.slice(0, 12);
+
+    const headlines = await Promise.all(items.map(async i => ({
       title: i.title,
       link: i.link,
       pubDate: i.pubDate,
       source: i.creator || (i.title.split(' - ').pop()),
-      image: `https://picsum.photos/seed/${encodeURIComponent(i.title.slice(0, 40))}/800/450`,
-    }));
+      image: await getOgImage(i.link),
+    })));
+
     res.json({ headlines });
   } catch (err) {
     console.error(err);
@@ -142,19 +168,35 @@ app.get('/api/news', async (req, res) => {
 });
 
 // ---------- Stocks (Stooq, free, no key needed) ----------
+// Stooq requires a market suffix on tickers (e.g. "aapl.us"), otherwise it
+// returns "N/D" for every field. We add the suffix and skip any symbol that
+// still comes back with no data instead of showing garbage rows.
 app.get('/api/stocks', async (req, res) => {
   try {
-    const symbols = (req.query.symbols || 'AAPL,MSFT,GOOGL,SPY').split(',');
+    const symbols = (req.query.symbols || 'AAPL,MSFT,GOOGL,SPY')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
     const results = [];
     for (const sym of symbols) {
-      const url = `https://stooq.com/q/l/?s=${encodeURIComponent(sym.toLowerCase())}&f=sd2t2ohlcv&h&e=csv`;
+      const stooqSym = `${sym.toLowerCase()}.us`;
+      const url = `https://stooq.com/q/l/?s=${encodeURIComponent(stooqSym)}&f=sd2t2ohlcv&h&e=csv`;
       const r = await fetch(url);
       const csv = await r.text();
-      const [header, row] = csv.trim().split('\n');
-      const cols = header.split(',');
-      const vals = row.split(',');
+      const lines = csv.trim().split('\n');
+      if (lines.length < 2) continue;
+
+      const cols = lines[0].split(',');
+      const vals = lines[1].split(',');
       const obj = {};
       cols.forEach((c, idx) => obj[c] = vals[idx]);
+
+      if (!obj.Close || obj.Close === 'N/D') {
+        console.warn(`No data for symbol ${sym} (tried ${stooqSym})`);
+        continue;
+      }
+
       results.push({
         symbol: sym.toUpperCase(),
         close: obj.Close,
