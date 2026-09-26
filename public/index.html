@@ -4,50 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Home Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header id="top-bar">
-    <div id="clock"></div>
-    <div id="date"></div>
-    <button id="mic-btn" title="Talk to assistant">🎤</button>
+<div class="screen">
+  <header class="top">
+    <div class="when">
+      <div class="clock"><span id="clock">--:--</span><span id="ampm" class="ampm"></span></div>
+      <div class="when-text">
+        <div id="date" class="date"></div>
+        <div id="weather" class="muted"></div>
+      </div>
+    </div>
+    <button id="mic-btn" class="mic" type="button">
+      <span class="mic-dot" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+      </span>
+      <span id="mic-label">Ask me something</span>
+    </button>
   </header>
 
   <main class="grid">
-    <section class="card" id="bills-card">
-      <h2>💵 Bills</h2>
-      <ul id="bills-list" class="event-list"><li class="muted">Loading…</li></ul>
-    </section>
+    <div class="col">
+      <section class="panel" aria-labelledby="today-h">
+        <div class="panel-head"><h2 id="today-h">Today</h2><span class="muted small">Google Calendar</span></div>
+        <ul id="today-list" class="rows"><li class="muted">Loading…</li></ul>
+      </section>
+      <section class="panel grow" aria-labelledby="meds-h">
+        <div class="panel-head"><h2 id="meds-h">Medications</h2><span id="meds-count" class="muted small"></span></div>
+        <ul id="meds-list" class="meds"><li class="muted">Loading…</li></ul>
+      </section>
+    </div>
 
-    <section class="card" id="meds-card">
-      <h2>💊 Medication Reminders</h2>
-      <ul id="meds-list" class="event-list"><li class="muted">Loading…</li></ul>
-    </section>
-
-    <section class="card" id="calendar-card">
-      <div class="cal-header">
-        <button id="cal-prev" class="cal-nav">‹</button>
-        <h2 id="cal-month-label">📅 Loading…</h2>
-        <button id="cal-next" class="cal-nav">›</button>
+    <section class="panel" aria-labelledby="bills-h">
+      <div class="panel-head"><h2 id="bills-h">Bills</h2><span id="bills-source" class="muted small">Next 30 days</span></div>
+      <div id="bill-totals" class="totals" hidden>
+        <div class="tile"><span class="muted small">Due this week</span><span id="total-week" class="num big"></span></div>
+        <div class="tile"><span class="muted small">Due this month</span><span id="total-month" class="num big"></span></div>
       </div>
-      <div id="calendar-grid" class="calendar-grid"></div>
+      <ul id="bills-list" class="rows"><li class="muted">Loading…</li></ul>
     </section>
 
-    <section class="card" id="news-card">
-      <h2>📰 Headlines</h2>
-      <div class="news-carousel">
-        <div id="news-track" class="news-track"><span class="muted">Loading…</span></div>
-      </div>
-    </section>
-
-    <section class="card" id="stocks-card">
-      <h2>📈 Stocks</h2>
-      <ul id="stocks-list" class="event-list"><li class="muted">Loading…</li></ul>
-    </section>
+    <div class="col">
+      <section class="panel" aria-labelledby="markets-h">
+        <div class="panel-head"><h2 id="markets-h">Markets</h2><span id="markets-updated" class="muted small"></span></div>
+        <div id="stocks" class="stocks"><div class="muted">Loading…</div></div>
+      </section>
+      <section class="panel grow" aria-labelledby="news-h">
+        <div class="panel-head"><h2 id="news-h">Headlines</h2><span class="muted small">Top stories</span></div>
+        <ul id="news-list" class="news"><li class="muted">Loading…</li></ul>
+      </section>
+    </div>
   </main>
 
-  <div id="assistant-bubble" class="hidden"></div>
-
-  <script src="app.js"></script>
+  <footer class="assistant" aria-live="polite">
+    <svg class="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>
+    <span class="muted">Assistant</span>
+    <span id="assistant-text" class="assistant-text"></span>
+    <span class="muted small hint">Try: “What bills are due?” · “Did I take my meds?”</span>
+  </footer>
+</div>
+<script src="app.js"></script>
 </body>
 </html>

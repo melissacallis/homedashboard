@@ -1,1 +1,1 @@
-https://homedashboard.herokuapp.com/oauth2callback
+web: node server.js

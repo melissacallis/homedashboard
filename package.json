@@ -1,7 +1,7 @@
 {
   "name": "home-dashboard",
-  "version": "1.0.0",
-  "description": "Home dashboard: Google Calendar, news, and stock quotes",
+  "version": "2.0.0",
+  "description": "Raspberry Pi wall dashboard: calendar, bills, medications, weather, news, stocks and a voice assistant",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -10,5 +10,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "googleapis": "^144.0.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
